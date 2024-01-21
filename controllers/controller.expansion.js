@@ -11,7 +11,7 @@ const getExpansions = async (req, res, next) => {
    catch (error) { next(error) };
 };
 
-// Get one expansion
+// GET one expansion
 const getExpansion = async (req, res, next) => {
    const { name } = req.params;
 

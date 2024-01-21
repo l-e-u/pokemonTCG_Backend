@@ -3,7 +3,7 @@ import Element from '../models/model.element.js'
 // GET all elements
 const getElements = async (req, res, next) => {
    try {
-      const elements = await Element.find({}).sort({ type });
+      const elements = await Element.find({}).sort({ type: 1 });
 
       return res.status(200).json(elements);
    }

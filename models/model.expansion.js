@@ -7,6 +7,10 @@ const expansionSchema = new Schema(
          type: Schema.Types.ObjectId
       }],
       code: String,
+      count: {
+         printed: Number,
+         total: Number
+      },
       images: {
          logoURL: String,
          symbolURL: String

@@ -2,23 +2,20 @@ import { Schema, model as Model } from 'mongoose';
 
 const pokemonSchema = new Schema({
    elements: [{
-      ref: 'Element',
-      type: Schema.Types.ObjectId
+      lowercase: true,
+      type: String
    }],
    evolves: {
       from: [{
-         default: null,
          ref: 'Pokemon',
          type: Schema.Types.ObjectId
       }],
       to: [{
-         default: null,
          ref: 'Pokemon',
          type: Schema.Types.ObjectId
       }]
    },
    forms: [{
-      version: String,
       ref: 'Pokemon',
       type: Schema.Types.ObjectId
    }],

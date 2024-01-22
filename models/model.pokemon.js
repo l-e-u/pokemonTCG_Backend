@@ -19,6 +19,8 @@ const pokemonSchema = new Schema({
       ref: 'Pokemon',
       type: Schema.Types.ObjectId
    }],
+   generation: Number,
+   imageURL: String,
    name: String,
    pokedexNumber: Number
 })

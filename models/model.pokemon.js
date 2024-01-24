@@ -22,7 +22,7 @@ const pokemonSchema = new Schema({
    generation: Number,
    imageURL: String,
    name: String,
-   pokedexNumber: Number
+   nationalPokedexNumber: Number
 })
 
 export default Model('Pokemon', pokemonSchema);

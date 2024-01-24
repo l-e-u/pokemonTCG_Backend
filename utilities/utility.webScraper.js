@@ -3,27 +3,7 @@ import puppeteer from 'puppeteer';
 const basePokedexURL = 'https://supeffective.com';
 const pokedexListPath = '/#/pokedex/national/home';
 
-const autoScroll = async (page) => {
-   await page.evaluate(async () => {
-      const footer = document.getElementsByTagName('footer')[0];
-
-      await new Promise((resolve) => {
-         let counter = 0;
-
-         let intervalId = setInterval(() => {
-            footer.scrollIntoView();
-            counter++;
-
-            if (counter > 20) {
-               clearInterval(intervalId);
-               resolve();
-            }
-         }, 250);
-      });
-   });
-};
-
-const getPokedexData = async (nationalPokedexNumber) => {
+export const getPokemonNameAndImage = async (nationalPokedexNumber) => {
    // Start a Puppeteer session
    const browser = await puppeteer.launch({
       // set 'headless: false' to have a visible browser for easier debugging
@@ -42,33 +22,36 @@ const getPokedexData = async (nationalPokedexNumber) => {
       waitUntil: 'networkidle0'
    });
 
-   // page.waitForSelector('button[title="Toggle Forms"]');
-
-   // Evaluate the page and get the data needed
-
+   // Click on buttons excluding additional pokemon forms and compact grid to load more assets at a time
    await page.evaluate(() => {
       document.querySelector('button[title="Toggle Forms"]').click();
       document.querySelector('button[title="Toggle Compact mode"]').click();
       return;
    });
 
+   // Wait for the additional assets to fully load
    await page.waitForNetworkIdle();
 
-   let listLength = 0;
-   let counter = 0;
+   // Store the scraped data when target is found
+   let targetPokemon;
 
-   while (nationalPokedexNumber > listLength) {
-      console.time('grabber')
-      counter++;
+   // Keep track of how many pokemon listings are loaded
+   let pokedexCount = 0;
 
-      listLength = await page.evaluate(() => {
+   // Keep track of scrolling to terminate loop if end of page has been reached
+   let prevScrollHeight = 0;
+   let currScrollHeight = 0;
+
+   // Loop to keep on scrolling down the page until the target pokemon is loaded
+   while (nationalPokedexNumber > pokedexCount) {
+      // Get how many pokemon are loaded
+      pokedexCount = await page.evaluate(() => {
          return [...document.querySelectorAll('[class^="_entryWrapper"]')].length;
       });
 
-      console.log(`entries loaded: ${listLength}`);
-
-      if (nationalPokedexNumber <= listLength) {
-         const pokemon = await page.evaluate((index) => {
+      // Store target pokemon data if it has been loaded
+      if (nationalPokedexNumber <= pokedexCount) {
+         targetPokemon = await page.evaluate((index) => {
             const entry = [...document.querySelectorAll('[class^="_entryWrapper"]')][index];
             const name = entry.querySelector('[class^="_entryName"]').innerHTML;
             const imagePath = entry.querySelector('picture > source:not(:first-child)').srcset;
@@ -77,83 +60,30 @@ const getPokedexData = async (nationalPokedexNumber) => {
 
          }, nationalPokedexNumber - 1);
 
-         console.timeEnd('grabber')
-         return console.log(pokemon);
+         break;
       };
 
-      await page.evaluate((counter) => {
-         const footer = document.getElementsByTagName('footer')[0];
-         footer.scrollIntoView();
-         return console.log(`scrolling ${counter}x`)
-      }, counter);
+      // If the target pokemon is not loaded, scroll down the page
+      currScrollHeight = await page.evaluate(() => {
+         document.getElementsByTagName('footer')[0].scrollIntoView();
 
+         return document.body.scrollHeight;
+      });
+
+      // Wait for the additional assets to fully load
       await page.waitForNetworkIdle();
 
-      console.log('network idle');
-
-      // fail-safe
-      if (counter > 100) {
-         console.log('break safe');
+      // If the end of the page has been reached, set targetPokemon to null as a failed search, else, update scroll height and loop again
+      if (prevScrollHeight === currScrollHeight) {
+         targetPokemon = null;
          break;
       }
+      else {
+         prevScrollHeight = currScrollHeight;
+      };
    };
 
-   console.log('loop done')
+   await browser.close();
 
-   // listLength = await page.evaluate(() => {
-   //    const entries = [...document.querySelectorAll('[class^="_entryWrapper"]')];
-
-   //    return entries.length;
-   // });
-
-   // console.log(listLength);
-
-   // if (nationalPokedexNumber > listLength) {
-   //    await page.evaluate(() => {
-   //       const footer = document.getElementsByTagName('footer')[0];
-   //       footer.scrollIntoView();
-
-   //       return;
-   //    });
-
-   //    await page.waitForNetworkIdle();
-
-   //    listLength = await page.evaluate(() => {
-   //       const entries = [...document.querySelectorAll('[class^="_entryWrapper"]')];
-
-   //       return entries.length;
-   //    });
-
-   //    return console.log(listLength);
-
-
-   // };
-
-   // const pokemon = await page.evaluate(async ({ thisPage, nationalPokedexNumber }) => {
-   //    const footer = document.getElementsByTagName('footer')[0];
-   //    const entries = [...document.querySelectorAll('[class^="_entryWrapper"]')];
-
-   //    console.log(entries.length);
-
-   //    if (nationalPokedexNumber <= entries.length) {
-   //       const entry = entries[nationalPokedexNumber - 1];
-   //       const name = entry.querySelector('[class^="_entryName"]').innerHTML;
-   //       const imagePath = entry.querySelector('picture > source:not(:first-child)').srcset;
-
-   //       return { name, imagePath };
-   //    }
-   //    else {
-   //       footer.scrollIntoView();
-   //       await thisPage.waitForNetworkIdle();
-   //       return console.log([...document.querySelectorAll('[class^="_entryWrapper"]')]);
-   //    };
-
-
-   // }, { thisPage: page, nationalPokedexNumber });
-
-   // console.log(pokemon);
-   return;
-   // await browser.close();
+   return targetPokemon;
 };
-
-getPokedexData(1025);

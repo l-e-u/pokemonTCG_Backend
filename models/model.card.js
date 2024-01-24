@@ -1,6 +1,51 @@
 import { Schema, model as Model } from 'mongoose';
 
+const tcgPlayerSchema = new Schema(
+   {
+      url: String,
+      prices: {
+         holofoil: {
+            low: Number,
+            mid: Number,
+            high: Number,
+            market: Number,
+            directLow: Number
+         }
+      }
+   },
+   { timestamps: true }
+);
+
+const cardMarketSchema = new Schema(
+   {
+      url: String,
+      prices: {
+         averageSellPrice: Number,
+         lowPrice: Number,
+         trendPrice: Number,
+         suggestedPrice: Number,
+         reverseHoloSell: Number,
+         reverseHoloLow: Number,
+         reverseHoloTrend: Number,
+         lowPricePlus: Number,
+         avg1: Number,
+         avg7: Number,
+         avg30: Number,
+         reverseHoloAvg1: Number,
+         reverseHoloAvg7: Number,
+         reverseHoloAvg30: Number
+      }
+   },
+   { timestamps: true }
+);
+
 const cardSchema = new Schema({
+   hp: Number,
+   illustrator: String,
+   level: String,
+   name: String,
+   number: String,
+   text: String,
    abilities: [{
       name: {
          lowercase: true,
@@ -32,15 +77,14 @@ const cardSchema = new Schema({
       ref: 'Expansion',
       type: Schema.Types.ObjectId
    },
-   hp: Number,
-   illustrator: String,
    imagesURL: {
       small: String,
       large: String,
    },
-   level: String,
-   name: String,
-   number: String,
+   markets: {
+      tcgPlayer: [tcgPlayerSchema],
+      cardMarket: [cardMarketSchema]
+   },
    pokemon: [{
       ref: 'Pokemon',
       type: Schema.Types.ObjectId
@@ -67,7 +111,6 @@ const cardSchema = new Schema({
       quantity: Number
    }],
    rules: [String],
-   text: String,
    subTypes: [{
       lowercase: true,
       type: String

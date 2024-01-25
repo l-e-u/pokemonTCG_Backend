@@ -3,7 +3,8 @@ import Card from '../models/model.card.js';
 // utilities
 import {
    getCardsByName,
-   getCardsByNationalPokedexNumber
+   getCardsByNationalPokedexNumber,
+   getCardsByExpansionId
 } from '../utilities/utility.pokemonCardsAPI.js';
 
 // GET all cards
@@ -22,17 +23,28 @@ const getCards = async (req, res, next) => {
    catch (error) { next(error) };
 };
 
+const getCardById = async (req, res, next) => {
+   const { id } = req.params;
+
+   try {
+      const card = await Card.findById(id);
+
+      return res.status(200).json(card);
+   }
+
+   catch (error) { next(error) }
+};
+
 // POST new card
 const createCard = async (req, res, next) => {
    try {
-      const cards = await getCardsByNationalPokedexNumber(697);
-      console.log('result:', cards)
+      const cards = await getCardsByExpansionId('pop1');
 
-      for (let index = 0; index < cards.length; index++) {
-         const card = cards[index];
-         console.log(card);
-      }
-      // const card = await Card.create({ ...req.body });
+
+      // for (let index = 0; index < cards.length; index++) {
+      //    const card = cards[index];
+      //    console.log(card);
+      // };
 
       return res.status(200).json(cards);
    }
@@ -42,5 +54,6 @@ const createCard = async (req, res, next) => {
 
 export {
    createCard,
-   getCards
+   getCards,
+   getCardById,
 };

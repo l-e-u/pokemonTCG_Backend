@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-   createPokemon,
+   // createPokemon,
    getAllPokemon,
    getOnePokemonByName,
 } from '../controllers/controller.pokemon.js';
@@ -14,6 +14,6 @@ router.get('/', getAllPokemon);
 router.get('/:name', getOnePokemonByName);
 
 // POST a new pokemon
-router.post('/', createPokemon);
+// router.post('/', createPokemon);
 
 export default router;

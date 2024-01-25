@@ -26,18 +26,18 @@ const getOnePokemonByName = async (req, res, next) => {
 };
 
 // POST new pokemon
-const createPokemon = async (req, res, next) => {
-   try {
-      const pokemon = await Pokemon.create({ ...req.body });
+// const createPokemon = async (req, res, next) => {
+//    try {
+//       const pokemon = await Pokemon.create({ ...req.body });
 
-      return res.status(200).json(pokemon);
-   }
+//       return res.status(200).json(pokemon);
+//    }
 
-   catch (error) { next(error) }
-};
+//    catch (error) { next(error) }
+// };
 
 export {
-   createPokemon,
+   // createPokemon,
    getAllPokemon,
    getOnePokemonByName,
 };

@@ -40,6 +40,7 @@ const cardMarketSchema = new Schema(
 );
 
 const cardSchema = new Schema({
+   altId: String,
    hp: Number,
    illustrator: String,
    level: String,
@@ -82,13 +83,9 @@ const cardSchema = new Schema({
       large: String,
    },
    markets: {
-      tcgPlayer: [tcgPlayerSchema],
-      cardMarket: [cardMarketSchema]
+      tcgPlayer: tcgPlayerSchema,
+      cardMarket: cardMarketSchema
    },
-   pokemon: [{
-      ref: 'Pokemon',
-      type: Schema.Types.ObjectId
-   }],
    rarity: {
       lowercase: true,
       type: String,

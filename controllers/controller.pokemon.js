@@ -11,12 +11,13 @@ const getAllPokemon = async (req, res, next) => {
    catch (error) { next(error) }
 };
 
-// GET one pokemon
-const getOnePokemon = async (req, res, next) => {
-   const { id } = req.params;
+// GET one pokemon by name
+const getOnePokemonByName = async (req, res, next) => {
+   const { name } = req.params;
 
    try {
-      const pokemon = await Pokemon.findOne({ id });
+      const pokemon = await Pokemon.findOne({ name })
+         .collation({ locale: 'en', strength: 2 });
 
       return res.status(200).json(pokemon);
    }
@@ -38,5 +39,5 @@ const createPokemon = async (req, res, next) => {
 export {
    createPokemon,
    getAllPokemon,
-   getOnePokemon,
+   getOnePokemonByName,
 };

@@ -9,7 +9,6 @@ import pokemonRoutes from './routes/route.pokemons.js';
 import seriesRoutes from './routes/route.series.js';
 
 const PORT = 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
 
@@ -29,7 +28,7 @@ app.use('/pokemon', pokemonRoutes);
 app.use('/series', seriesRoutes);
 
 // connect to database, then listen to port
-connectToDatabase(MONGODB_URI)
+connectToDatabase()
    .then(() => {
       console.log('Connected to database.')
 

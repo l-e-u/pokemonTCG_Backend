@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
    createPokemon,
    getAllPokemon,
-   getOnePokemon,
+   getOnePokemonByName,
 } from '../controllers/controller.pokemon.js';
 
 const router = Router();
@@ -11,7 +11,7 @@ const router = Router();
 router.get('/', getAllPokemon);
 
 // GET one pokemon
-router.get('/', getOnePokemon);
+router.get('/:name', getOnePokemonByName);
 
 // POST a new pokemon
 router.post('/', createPokemon);

@@ -1,26 +1,22 @@
 import { Schema, model as Model } from 'mongoose';
 
-const expansionSchema = new Schema(
-   {
-      cards: [{
-         ref: 'Card',
-         type: Schema.Types.ObjectId
-      }],
-      code: String,
-      count: {
-         printed: Number,
-         total: Number
-      },
-      images: {
-         logoURL: String,
-         symbolURL: String
-      },
-      name: String,
-      released: Date
+const expansionSchema = new Schema({
+   abbreviation: String,
+   altId: String,
+   name: String,
+   released: Date,
+   cards: [{
+      ref: 'Card',
+      type: Schema.Types.ObjectId
+   }],
+   count: {
+      printed: Number,
+      total: Number
    },
-   {
-      timestamps: true
-   }
-);
+   images: {
+      logoURL: String,
+      symbolURL: String
+   },
+});
 
 export default Model('Expansion', expansionSchema);

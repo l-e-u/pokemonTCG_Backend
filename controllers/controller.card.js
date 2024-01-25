@@ -1,19 +1,20 @@
 import Card from '../models/model.card.js';
 
 // utilities
-import { getCardsByPokemonName } from '../utilities/utility.pokemonCardsAPI.js';
+import {
+   getCardsByName,
+   getCardsByNationalPokedexNumber
+} from '../utilities/utility.pokemonCardsAPI.js';
 
 // GET all cards
 const getCards = async (req, res, next) => {
-   const { data: cards } = await getCardsByPokemonName('mew');
-
-   console.log(cards);
-
-   return res.status(200).json(cards);
-
-
    try {
-      const cards = await Card.find({}).sort({ name: 1 });
+      const { name, nationalPokedexNumber } = req.query;
+      let cards;
+
+      if (name) cards = await getCardsByName(name);
+
+      if (nationalPokedexNumber) cards = await getCardsByNationalPokedexNumber(nationalPokedexNumber);
 
       return res.status(200).json(cards);
    }
@@ -24,9 +25,16 @@ const getCards = async (req, res, next) => {
 // POST new card
 const createCard = async (req, res, next) => {
    try {
-      const card = await Card.create({ ...req.body });
+      const cards = await getCardsByNationalPokedexNumber(697);
+      console.log('result:', cards)
 
-      return res.status(200).json(card);
+      for (let index = 0; index < cards.length; index++) {
+         const card = cards[index];
+         console.log(card);
+      }
+      // const card = await Card.create({ ...req.body });
+
+      return res.status(200).json(cards);
    }
 
    catch (error) { next(error) }

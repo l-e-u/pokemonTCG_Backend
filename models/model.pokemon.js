@@ -1,6 +1,14 @@
 import { Schema, model as Model } from 'mongoose';
 
 const pokemonSchema = new Schema({
+   generation: Number,
+   imageURL: String,
+   name: String,
+   nationalPokedexNumber: Number,
+   cards: [{
+      ref: 'Card',
+      type: Schema.Types.ObjectId
+   }],
    elements: [{
       lowercase: true,
       type: String
@@ -14,15 +22,7 @@ const pokemonSchema = new Schema({
          ref: 'Pokemon',
          type: Schema.Types.ObjectId
       }]
-   },
-   forms: [{
-      ref: 'Pokemon',
-      type: Schema.Types.ObjectId
-   }],
-   generation: Number,
-   imageURL: String,
-   name: String,
-   nationalPokedexNumber: Number
-})
+   }
+});
 
 export default Model('Pokemon', pokemonSchema);

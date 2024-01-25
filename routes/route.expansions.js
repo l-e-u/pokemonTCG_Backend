@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-   createExpansion,
+   // createExpansion,
    getExpansion,
    getExpansions,
 } from '../controllers/controller.expansion.js';
@@ -12,8 +12,5 @@ router.get('/', getExpansions);
 
 // GET one expansion
 router.get('/', getExpansion);
-
-// POST a new expansion
-router.get('/', createExpansion);
 
 export default router;

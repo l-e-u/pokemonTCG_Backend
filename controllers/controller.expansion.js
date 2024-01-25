@@ -1,9 +1,10 @@
-import Expansion from '../models/model.expansion.js'
+import Expansion from '../models/model.expansion.js';
+// import Series from '../models/model.series.js';
 
 // GET all expansions
 const getExpansions = async (req, res, next) => {
    try {
-      const expansions = await Expansion.find({}).sort({ name: 1 });
+      const expansions = await Expansion.find({}).sort({ release: 1 });
 
       return res.status(200).json(expansions);
    }
@@ -25,18 +26,48 @@ const getExpansion = async (req, res, next) => {
 };
 
 // POST new expansion
-const createExpansion = async (req, res, next) => {
-   try {
-      const expansion = await Expansion.create({ ...req.body });
+// const createExpansion = async (req, res, next) => {
+//    try {
 
-      return res.status(200).json(expansion);
-   }
+//       const series = [];
 
-   catch (error) { next(error) }
-};
+//       // these are their expansions
+//       const sets = await getAllSets();
+
+//       sets.forEach(async (set) => {
+//          const myExpansion = {
+//             abbreviation: set.ptcgoCode,
+//             altId: set.id,
+//             name: set.name,
+//             released: new Date(set.releaseDate),
+//             count: {
+//                printed: set.printedTotal,
+//                total: set.total
+//             },
+//             images: {
+//                logoURL: set.images.logo,
+//                symbolURL: set.images.symbol
+//             }
+//          };
+
+//          const expansion = await Expansion.create(myExpansion);
+
+//          await Series.findOneAndUpdate(
+//             { name: set.series },
+//             { $push: { expansions: expansion } },
+//             { upsert: true }
+//          );
+
+//       });
+
+//       return res.status(200).json(series);
+//    }
+
+//    catch (error) { next(error) }
+// };
 
 export {
-   createExpansion,
+   // createExpansion,
    getExpansion,
    getExpansions,
 };

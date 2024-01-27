@@ -4,13 +4,41 @@ const tcgPlayerSchema = new Schema(
    {
       url: String,
       prices: {
+         normal: {
+            low: Number,
+            mid: Number,
+            high: Number,
+            market: Number,
+            directLow: Number
+         },
          holofoil: {
             low: Number,
             mid: Number,
             high: Number,
             market: Number,
             directLow: Number
-         }
+         },
+         reverseHolofoil: {
+            low: Number,
+            mid: Number,
+            high: Number,
+            market: Number,
+            directLow: Number
+         },
+         FirstEditionHolofoil: {
+            low: Number,
+            mid: Number,
+            high: Number,
+            market: Number,
+            directLow: Number
+         },
+         FirstEditionNormal: {
+            low: Number,
+            mid: Number,
+            high: Number,
+            market: Number,
+            directLow: Number
+         },
       }
    },
    { timestamps: true }
@@ -63,7 +91,7 @@ const cardSchema = new Schema({
          },
          quantity: Number
       }],
-      damage: Number,
+      damage: String,
       name: {
          lowercase: true,
          type: String
@@ -78,7 +106,7 @@ const cardSchema = new Schema({
       ref: 'Expansion',
       type: Schema.Types.ObjectId
    },
-   imagesURL: {
+   imageURLs: {
       small: String,
       large: String,
    },
@@ -91,7 +119,7 @@ const cardSchema = new Schema({
       type: String,
    },
    resistances: [{
-      type: {
+      elementType: {
          lowercase: true,
          type: String
       },
@@ -123,7 +151,7 @@ const cardSchema = new Schema({
       }
    },
    weaknesses: [{
-      type: {
+      elementType: {
          lowercase: true,
          type: String
       },

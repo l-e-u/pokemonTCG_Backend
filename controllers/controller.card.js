@@ -4,7 +4,8 @@ import Card from '../models/model.card.js';
 import {
    getCardsByName,
    getCardsByNationalPokedexNumber,
-   getCardsByExpansionId
+   getCardsByExpansionId,
+   copyCardToMySchema,
 } from '../utilities/utility.pokemonCardsAPI.js';
 
 // GET all cards
@@ -27,7 +28,11 @@ const getCardById = async (req, res, next) => {
    const { id } = req.params;
 
    try {
-      const card = await Card.findById(id);
+      const card = await Card.findById(id)
+         .populate({
+            path: 'expansion',
+            select: { 'cards': 0 }
+         });
 
       return res.status(200).json(card);
    }
@@ -35,25 +40,45 @@ const getCardById = async (req, res, next) => {
    catch (error) { next(error) }
 };
 
-// POST new card
-const createCard = async (req, res, next) => {
+// POST new cards based on the desired expansion
+const createCardsByExpansion = async (req, res, next) => {
+   const expansion = req.body;
+
    try {
-      const cards = await getCardsByExpansionId('pop1');
+      console.log(`WORKING: ${expansion.altId} - ${expansion.name}`);
 
+      const data = await getCardsByExpansionId(expansion.altId);
 
-      // for (let index = 0; index < cards.length; index++) {
-      //    const card = cards[index];
-      //    console.log(card);
-      // };
+      const newCards = data.map(copyCardToMySchema);
 
-      return res.status(200).json(cards);
+      await Card.insertMany(newCards)
+         .then(async (cards) => {
+            expansion.cards = [];
+
+            cards.forEach(card => {
+               expansion.cards.push(card._id);
+            });
+
+            await expansion.save();
+
+            console.log('SUCCESS!', `${newCards.length} added!`);
+
+         })
+         .catch(error => {
+            console.log(`ERROR @ ${index}`, error);
+         });
+
+      // New line
+      console.log();
+
+      return res.status(200).json("Complete");
    }
 
    catch (error) { next(error) }
 };
 
 export {
-   createCard,
+   createCardsByExpansion,
    getCards,
    getCardById,
 };

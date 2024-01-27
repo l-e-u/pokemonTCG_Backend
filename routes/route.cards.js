@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-   createCard,
+   // createCard,
    getCards,
    getCardById
 } from '../controllers/controller.card.js';
@@ -14,6 +14,6 @@ router.get('/', getCards);
 router.get('/:id', getCardById);
 
 // POST a new card
-router.post('/', createCard);
+// router.post('/', createCard);
 
 export default router;

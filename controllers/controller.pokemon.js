@@ -30,8 +30,7 @@ const getListOfPokemonNames = async (req, res, next) => {
    const { name } = req.params;
 
    try {
-      const nameList = await Pokemon.find({ name })
-         .collation({ locale: 'en', strength: 2 })
+      const nameList = await Pokemon.find({ name: { $regex: name, $options: 'i' } })
          .sort({ name: 1 });
 
       return res.status(200).json(nameList);

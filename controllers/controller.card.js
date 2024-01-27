@@ -2,8 +2,6 @@ import Card from '../models/model.card.js';
 
 // utilities
 import {
-   getCardsByName,
-   getCardsByNationalPokedexNumber,
    getCardsByExpansionId,
    copyCardToMySchema,
 } from '../utilities/utility.pokemonCardsAPI.js';
@@ -12,11 +10,14 @@ import {
 const getCards = async (req, res, next) => {
    try {
       const { name, nationalPokedexNumber } = req.query;
-      let cards;
-
-      if (name) cards = await getCardsByName(name);
-
-      if (nationalPokedexNumber) cards = await getCardsByNationalPokedexNumber(nationalPokedexNumber);
+      const cards = await Card.find({
+         ...(name && { name }),
+         ...(nationalPokedexNumber && { nationalPokedexNumber })
+      })
+         .populate({
+            path: 'expansion',
+            select: { 'cards': 0 }
+         });
 
       return res.status(200).json(cards);
    }

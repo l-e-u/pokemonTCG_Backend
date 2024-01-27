@@ -2,6 +2,10 @@ import pokemon from 'pokemontcgsdk';
 
 pokemon.configure({ apiKey: process.env.POKEMONGTCG_API_KEY });
 
+export const getCardMarkets = async (id) => {
+   return await pokemon.card.where({ q: `id:"${id}"` });
+};
+
 // Collects all cards to a specific expansion, the API allows max of 250 per page. It will keep collecting cards page per page untill the end
 export const getCardsByExpansionId = async (id) => {
    let page = 0;
@@ -104,6 +108,7 @@ const groupArrayByElements = (array) => {
 };
 
 export default {
+   getCardMarkets,
    getCardsByExpansionId,
    getCardsByName,
    getCardsByNationalPokedexNumber,

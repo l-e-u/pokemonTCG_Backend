@@ -25,6 +25,21 @@ const getOnePokemonByName = async (req, res, next) => {
    catch (error) { next(error) }
 };
 
+// GET list of pokemon names
+const getListOfPokemonNames = async (req, res, next) => {
+   const { name } = req.params;
+
+   try {
+      const nameList = await Pokemon.find({ name })
+         .collation({ locale: 'en', strength: 2 })
+         .sort({ name: 1 });
+
+      return res.status(200).json(nameList);
+   }
+
+   catch (error) { next(error) }
+};
+
 // POST new pokemon
 // const createPokemon = async (req, res, next) => {
 //    try {
@@ -39,5 +54,6 @@ const getOnePokemonByName = async (req, res, next) => {
 export {
    // createPokemon,
    getAllPokemon,
+   getListOfPokemonNames,
    getOnePokemonByName,
 };

@@ -5,6 +5,7 @@ const pokemonSchema = new Schema({
    imageURL: String,
    name: String,
    nationalPokedexNumber: Number,
+   primary: Boolean,
    cards: [{
       ref: 'Card',
       type: Schema.Types.ObjectId

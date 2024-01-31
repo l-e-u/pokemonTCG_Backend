@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
    // createPokemon,
    getAllPokemon,
-   getListOfPokemonNames,
+   getPokemonByNameSearch,
    getOnePokemonByName,
    // updatePokemon
 } from '../controllers/controller.pokemon.js';
@@ -12,7 +12,8 @@ const router = Router();
 // GET all pokemon
 router.get('/', getAllPokemon);
 
-router.get('/search/:name', getListOfPokemonNames);
+// GET a list of pokemon where the name matches the query
+router.get('/search/:name', getPokemonByNameSearch);
 
 // GET one pokemon
 router.get('/:name', getOnePokemonByName);

@@ -32,13 +32,18 @@ const getOnePokemonByName = async (req, res, next) => {
 };
 
 // GET list of pokemon names
-const getListOfPokemonNames = async (req, res, next) => {
+const getPokemonByNameSearch = async (req, res, next) => {
    const { name } = req.params;
 
    try {
       const nameList =
          await Pokemon
-            .find({ name: { $regex: name, $options: 'i' }, primary: true })
+            .find({
+               name: {
+                  $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
+                  $options: 'i'
+               }, primary: true
+            })
             .sort({ name: 1 });
 
       return res.status(200).json(nameList);
@@ -88,7 +93,7 @@ const updatePokemon = async (req, res, next) => {
 export {
    // createPokemon,
    getAllPokemon,
-   getListOfPokemonNames,
+   getPokemonByNameSearch,
    getOnePokemonByName,
    // updatePokemon
 };

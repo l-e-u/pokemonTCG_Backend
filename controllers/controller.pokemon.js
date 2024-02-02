@@ -3,11 +3,12 @@ import Pokemon from '../models/model.pokemon.js';
 // GET all pokemon
 const getAllPokemon = async (req, res, next) => {
    try {
+      const query = req.query || {};
+
       const pokemon =
          await Pokemon
-            .find({})
-            .sort({ pokedexNumber: 1 })
-            .populate('elements');
+            .find({ ...query })
+            .sort({ pokedexNumber: 1 });
 
       return res.status(200).json(pokemon);
    }
@@ -17,9 +18,9 @@ const getAllPokemon = async (req, res, next) => {
 
 // GET one pokemon by name
 const getOnePokemonByName = async (req, res, next) => {
-   const { name } = req.params;
-
    try {
+      const { name } = req.params;
+
       const pokemon =
          await Pokemon
             .findOne({ name })
@@ -33,9 +34,9 @@ const getOnePokemonByName = async (req, res, next) => {
 
 // GET list of pokemon names
 const getPokemonByNameSearch = async (req, res, next) => {
-   const { name } = req.params;
-
    try {
+      const { name } = req.params;
+
       const nameList =
          await Pokemon
             .find({
@@ -65,26 +66,20 @@ const getPokemonByNameSearch = async (req, res, next) => {
 
 const updatePokemon = async (req, res, next) => {
    try {
+      const { generation, max, min } = req.query
+
       const pokemon =
          await Pokemon
-            .find({})
+            .find({ nationalPokedexNumber: { $gte: min, $lte: max } })
             .sort({ nationalPokedexNumber: 1 });
 
-      for (let index = 0; index < 1025; index++) {
-         const natNum = index + 1;
-
-         const batch =
-            pokemon
-               .filter(({ nationalPokedexNumber }) => nationalPokedexNumber === natNum).
-               sort((a, b) => a.name.length - b.name.length);
-
-         const primary = batch.shift()
-
-         primary.primary = true;
-         await primary.save()
+      for (let i = 0; i < pokemon.length; i++) {
+         const monster = pokemon[i]
+         monster.generation = generation;
+         await monster.save()
       }
 
-      return res.status(200).json('done')
+      return res.status(200).json(pokemon)
 
    }
    catch (error) { next(error) }
@@ -95,5 +90,5 @@ export {
    getAllPokemon,
    getPokemonByNameSearch,
    getOnePokemonByName,
-   // updatePokemon
+   updatePokemon
 };

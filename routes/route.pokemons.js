@@ -4,7 +4,7 @@ import {
    getAllPokemon,
    getPokemonByNameSearch,
    getOnePokemonByName,
-   // updatePokemon
+   updatePokemon
 } from '../controllers/controller.pokemon.js';
 
 const router = Router();
@@ -21,5 +21,7 @@ router.get('/:name', getOnePokemonByName);
 // POST a new pokemon
 // router.post('/', createPokemon);
 
+// PATCH update pokemon
+router.patch('/', updatePokemon)
 
 export default router;

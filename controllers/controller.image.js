@@ -1,4 +1,4 @@
-import Image from '../models/model.image';
+import Image from '../models/model.image.js';
 
 const createImage = async (req, res, next) => {
    try {

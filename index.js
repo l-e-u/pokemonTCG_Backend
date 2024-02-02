@@ -5,6 +5,7 @@ import cors from 'cors';
 
 import cardRoutes from './routes/route.cards.js';
 import expansionRoutes from './routes/route.expansions.js';
+import imageRoutes from './routes/route.images.js';
 import pokemonRoutes from './routes/route.pokemons.js';
 import seriesRoutes from './routes/route.series.js';
 
@@ -24,6 +25,7 @@ app.use((req, res, next) => {
 // routes
 app.use('/cards', cardRoutes);
 app.use('/expansions', expansionRoutes);
+app.use('/images', imageRoutes);
 app.use('/pokemon', pokemonRoutes);
 app.use('/series', seriesRoutes);
 

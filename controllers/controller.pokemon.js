@@ -43,7 +43,8 @@ const getPokemonByNameSearch = async (req, res, next) => {
                name: {
                   $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
                   $options: 'i'
-               }, primary: true
+               },
+               primary: true
             })
             .sort({ name: 1 });
 

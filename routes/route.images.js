@@ -1,11 +1,15 @@
 import { Router } from 'express';
 import {
-   createImage
+   createImage,
+   createImages
 } from '../controllers/controller.image.js';
 
 const router = Router();
 
-// PUT create one image
-router.put('/', createImage);
+// POST create images
+router.post('/bulk', createImages)
+
+// POST create one image
+router.post('/', createImage);
 
 export default router;

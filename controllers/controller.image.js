@@ -11,5 +11,4 @@ const createImage = async (req, res, next) => {
 
 export {
    createImage,
-   createImages,
 };

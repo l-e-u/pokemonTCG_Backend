@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import {
    createImage,
-   createImages
 } from '../controllers/controller.image.js';
 
 const router = Router();

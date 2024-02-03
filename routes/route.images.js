@@ -6,9 +6,6 @@ import {
 
 const router = Router();
 
-// POST create images
-router.post('/bulk', createImages)
-
 // POST create one image
 router.post('/', createImage);
 

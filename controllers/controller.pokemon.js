@@ -8,7 +8,8 @@ const getAllPokemon = async (req, res, next) => {
       const pokemon =
          await Pokemon
             .find({ ...query })
-            .sort({ pokedexNumber: 1 });
+            .populate(['images.normal', 'images.shiny'])
+            .sort({ nationalPokedexNumber: 1 });
 
       return res.status(200).json(pokemon);
    }
@@ -46,6 +47,7 @@ const getPokemonByNameSearch = async (req, res, next) => {
                },
                primary: true
             })
+            .populate(['images.normal', 'images.shiny'])
             .sort({ name: 1 });
 
       return res.status(200).json(nameList);

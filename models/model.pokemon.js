@@ -25,8 +25,14 @@ const pokemonSchema = new Schema({
       }]
    },
    images: {
-      normal: String,
-      shiny: String
+      normal: {
+         ref: 'Image',
+         type: Schema.Types.ObjectId
+      },
+      shiny: {
+         ref: 'Image',
+         type: Schema.Types.ObjectId
+      }
    }
 });
 

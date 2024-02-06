@@ -49,55 +49,137 @@ const getImages = async (req, res, next) => {
    catch (error) { next(error) }
 };
 
-// this is to pair images with coresponding pokemon, to be deleted after the database has been updated
 const linkImagesWithPokemon = async (req, res, next) => {
    try {
       for (let nationalPokedexNumber = 1; nationalPokedexNumber < 152; nationalPokedexNumber++) {
-         // get pokemon by pokedex number, this can include variants like female, mega, gigantamax, and regional versions
-         const pokemons = await Pokemon.find({ nationalPokedexNumber });
-         // get all images associated with pokemon
+         const pokemons = await Pokemon.find({ nationalPokedexNumber }).exec();
          const images = await Image.find({ file: { $regex: `_${nationalPokedexNumber.toString().padStart(4, "0")}_`, $options: 'i' } });
 
-         // all images come in pairs as normal & shiny (rare) images
-         const normalImages = images.filter(i => i.file.charAt(i.file.length - 1) === 'n');
-         const rareImages = images.filter(i => i.file.charAt(i.file.length - 1) === 'r');
-
          // GIGANTAMAX
-         // get this variant out the day since it's the easiest to identify
-         const gIndex = pokemons.findIndex(p => p.name.includes('Gigantamax'));
+         // only 1 variant: mf (male/female)
+         const pokemonG = pokemons.find(poke => poke.name.includes("Gigantamax"));
+         const imageG_Normal = images.find(img => img.details.gigantamax && !img.details.shiny);
+         const imageG_Shiny = images.find(img => img.details.gigantamax && img.details.shiny);
 
-         if (gIndex !== -1) {
-            // get the pokemon and remove it from the array of pokemons
-            const pokemon = pokemons.splice(gIndex, 1)[0];
+         if (pokemonG) {
+            pokemonG.images.normal = imageG_Normal._id;
+            pokemonG.images.shiny = imageG_Shiny._id;
+            await pokemonG.save();
 
-            // find the normal and shiny images within their arrays
-            const imageN_Image = normalImages.findIndex(n => n.details.gigantamax);
-            const imageR_Image = rareImages.findIndex(r => r.details.gigantamax);
-
-            // get the normal and shiny images and remove them from their arrays
-            const normalImage = normalImages.splice(imageN_Image, 1)[0];
-            const rareImage = rareImages.splice(imageR_Image, 1)[0];
-
-            pokemon.images.normal = normalImage._id;
-            pokemon.images.shiny = rareImage._id;
-
-            console.log(pokemons)
-            console.log(normalImages)
-            console.log(rareImages)
-
-            break;
-            await pokemon.save();
+            // console.log("_____ GIGANTAMAX _____");
+            // console.log("POKEMON:", pokemonG);
+            // console.log("NORMAL IMAGE:", imageG_Normal);
+            // console.log("SHINY IMAGE:", imageG_Shiny);
          };
 
-         // primary vairant
 
-         // other variants
+         // PRIMARY
+         // various variants: mf (male/female), md (male), fd (female), fo (female only), mo (male only), uk (unknown)
+         const pokemonP = pokemons.find(poke => poke.primary);
+         const imagesP_Normals = images.filter(img => (!img.details.gigantamax && (img.details.variant === '000') && !img.details.shiny));
+         const imagesP_Shinies = images.filter(img => (!img.details.gigantamax && (img.details.variant === '000') && img.details.shiny));
+         const genderMap = new Map();
+
+         imagesP_Normals.forEach(ni => {
+            genderMap.set(ni.details.gender, [ni]);
+         });
+
+         imagesP_Shinies.forEach(si => {
+            genderMap.get(si.details.gender).push(si);
+         });
+
+         // console.log("_____ PRIMARY _____");
+         // console.log("POKEMON:", pokemonP);
+         // console.log("GENDER MAP:", genderMap);
+
+         // pokemon with female variants will need to create a new pokemon as the female form
+         if (genderMap.get('md') || genderMap.get('fd')) {
+            const imagesMale = genderMap.get('md');
+            const imagesFemale = genderMap.get('fd');
+
+            // make sure that both male and female images exist
+            if ((imagesMale && !imagesFemale) || (!imagesMale && imagesFemale)) {
+               console.error("********** ERROR **********");
+               console.error("MALE AND FEMALE MISMATCH!")
+            }
+            else {
+               await Pokemon.create({
+                  generation: 1,
+                  name: pokemonP.name + " ♂",
+                  nationalPokedexNumber,
+                  primary: false,
+                  images: {
+                     normal: imagesFemale[0]._id,
+                     shiny: imagesFemale[1]._id
+                  }
+               });
+
+               // const femalePokemon = {
+               //    generation: 1,
+               //    name: pokemonP.name + "♂",
+               //    nationalPokedexNumber,
+               //    primary: false,
+               //    images: {
+               //       normal: imagesFemale[0]._id,
+               //       shiny: imagesFemale[1]._id
+               //    }
+               // };
+
+               pokemonP.images.normal = imagesMale[0]._id;
+               pokemonP.images.shiny = imagesMale[1]._id;
+               await pokemonP.save();
+
+               // console.log("MALE IMAGES:", imagesMale);
+               // console.log("FEMALE IMAGES:", imagesFemale);
+               // console.log("FEMALE POKEMON:", femalePokemon);
+            };
+
+         }
+         else {
+            pokemonP.images.normal = imagesP_Normals[0]._id;
+            pokemonP.images.shiny = imagesP_Shinies[0]._id;
+            await pokemonP.save();
+
+            // console.log("NORMAL IMAGES:", imagesP_Normals);
+            // console.log("SHINY IMAGES:", imagesP_Shinies);
+         };
+
+         // OTHER
+         // this can include Mega Evolutions or regional variants
+         const pokemonO = pokemons.filter(poke => !poke.name.includes("Gigantamax") && !poke.primary);
+
+         // only 1 variant: mf (male/female)
+         if (pokemonO.length === 1) {
+            const imageO_Normal = images.find(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && !img.details.shiny)));
+            const imageO_Shiny = images.find(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && img.details.shiny)));
+
+            pokemonO[0].images.normal = imageO_Normal._id;
+            pokemonO[0].images.shiny = imageO_Shiny._id;
+            await pokemonO[0].save();
+
+            // console.log("_____ OTHER VARIANTS _____");
+            // console.log("POKEMON:", pokemonO);
+            // console.log("NORMAL IMAGE:", imageO_Normal);
+            // console.log("SHINY IMAGE:", imageO_Shiny);
+         };
+
+         // 
+         if (pokemonO.length > 1) {
+            const imagesO_Normals = images.filter(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && !img.details.shiny)));
+            const imagesO_Shinies = images.filter(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && img.details.shiny)));
+
+            console.error("MORE THAN ONE VARIANT:", pokemonO);
+            console.error("NORMAL IMAGES:", imagesO_Normals);
+            console.error("SHINY IMAGES:", imagesO_Shinies);
+         };
+
+         console.log('Updated Pokedex#:', nationalPokedexNumber);
       };
 
       return res.status(200).json('done');
    }
    catch (error) { next(error) }
-}
+};
 
 export {
    createImage,

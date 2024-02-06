@@ -1,5 +1,6 @@
 /node_modules
 
+.DS*
 .env
 *.http
 .cache

@@ -51,8 +51,8 @@ const getImages = async (req, res, next) => {
 
 const linkImagesWithPokemon = async (req, res, next) => {
    try {
-      for (let nationalPokedexNumber = 1; nationalPokedexNumber < 152; nationalPokedexNumber++) {
-         const pokemons = await Pokemon.find({ nationalPokedexNumber }).exec();
+      for (let nationalPokedexNumber = 152; nationalPokedexNumber < 252; nationalPokedexNumber++) {
+         const pokemons = await Pokemon.find({ nationalPokedexNumber });
          const images = await Image.find({ file: { $regex: `_${nationalPokedexNumber.toString().padStart(4, "0")}_`, $options: 'i' } });
 
          // GIGANTAMAX
@@ -178,7 +178,10 @@ const linkImagesWithPokemon = async (req, res, next) => {
 
       return res.status(200).json('done');
    }
-   catch (error) { next(error) }
+   catch (error) {
+      console.log("CAUGHT:", error);
+      next(error);
+   }
 };
 
 export {

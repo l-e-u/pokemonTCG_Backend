@@ -45,7 +45,7 @@ const imageSchema = new Schema(
             const removeProps = ["imgur", "file", "extname", "area"];
 
             removeProps.forEach(prop => delete json[prop]);
-            json.colorPalette.sort((a, b) => a.area - b.area)
+            json.colorPalette.sort((a, b) => a.areaPercentage - b.areaPercentage)
          },
          virtuals: false
       }

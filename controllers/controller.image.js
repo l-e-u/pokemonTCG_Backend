@@ -51,7 +51,9 @@ const getImages = async (req, res, next) => {
 
 const linkImagesWithPokemon = async (req, res, next) => {
    try {
-      for (let nationalPokedexNumber = 152; nationalPokedexNumber < 252; nationalPokedexNumber++) {
+      const isDebugging = true;
+
+      for (let nationalPokedexNumber = 494; nationalPokedexNumber < 650; nationalPokedexNumber++) {
          const pokemons = await Pokemon.find({ nationalPokedexNumber });
          const images = await Image.find({ file: { $regex: `_${nationalPokedexNumber.toString().padStart(4, "0")}_`, $options: 'i' } });
 
@@ -64,7 +66,8 @@ const linkImagesWithPokemon = async (req, res, next) => {
          if (pokemonG) {
             pokemonG.images.normal = imageG_Normal._id;
             pokemonG.images.shiny = imageG_Shiny._id;
-            await pokemonG.save();
+
+            if (!isDebugging) await pokemonG.save();
 
             // console.log("_____ GIGANTAMAX _____");
             // console.log("POKEMON:", pokemonG);
@@ -100,34 +103,27 @@ const linkImagesWithPokemon = async (req, res, next) => {
             // make sure that both male and female images exist
             if ((imagesMale && !imagesFemale) || (!imagesMale && imagesFemale)) {
                console.error("********** ERROR **********");
-               console.error("MALE AND FEMALE MISMATCH!")
+               console.error("MALE AND FEMALE MISMATCH!", nationalPokedexNumber)
+               console.log(genderMap)
             }
             else {
-               await Pokemon.create({
+               const femalePokemon = {
                   generation: 1,
-                  name: pokemonP.name + " ♂",
+                  name: pokemonP.name + "♂",
                   nationalPokedexNumber,
                   primary: false,
                   images: {
                      normal: imagesFemale[0]._id,
                      shiny: imagesFemale[1]._id
                   }
-               });
+               };
 
-               // const femalePokemon = {
-               //    generation: 1,
-               //    name: pokemonP.name + "♂",
-               //    nationalPokedexNumber,
-               //    primary: false,
-               //    images: {
-               //       normal: imagesFemale[0]._id,
-               //       shiny: imagesFemale[1]._id
-               //    }
-               // };
+               if (!isDebugging) await Pokemon.create(femalePokemon);
 
                pokemonP.images.normal = imagesMale[0]._id;
                pokemonP.images.shiny = imagesMale[1]._id;
-               await pokemonP.save();
+
+               if (!isDebugging) await pokemonP.save();
 
                // console.log("MALE IMAGES:", imagesMale);
                // console.log("FEMALE IMAGES:", imagesFemale);
@@ -138,7 +134,8 @@ const linkImagesWithPokemon = async (req, res, next) => {
          else {
             pokemonP.images.normal = imagesP_Normals[0]._id;
             pokemonP.images.shiny = imagesP_Shinies[0]._id;
-            await pokemonP.save();
+
+            if (!isDebugging) await pokemonP.save();
 
             // console.log("NORMAL IMAGES:", imagesP_Normals);
             // console.log("SHINY IMAGES:", imagesP_Shinies);
@@ -155,7 +152,8 @@ const linkImagesWithPokemon = async (req, res, next) => {
 
             pokemonO[0].images.normal = imageO_Normal._id;
             pokemonO[0].images.shiny = imageO_Shiny._id;
-            await pokemonO[0].save();
+
+            if (!isDebugging) await pokemonO[0].save();
 
             // console.log("_____ OTHER VARIANTS _____");
             // console.log("POKEMON:", pokemonO);
@@ -163,14 +161,38 @@ const linkImagesWithPokemon = async (req, res, next) => {
             // console.log("SHINY IMAGE:", imageO_Shiny);
          };
 
-         // 
+         // if needed, enter logic for specific pokemon and their variants
          if (pokemonO.length > 1) {
             const imagesO_Normals = images.filter(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && !img.details.shiny)));
             const imagesO_Shinies = images.filter(img => ((!img.details.gigantamax && (Number(img.details.variant) > 0) && img.details.shiny)));
 
-            console.error("MORE THAN ONE VARIANT:", pokemonO);
-            console.error("NORMAL IMAGES:", imagesO_Normals);
-            console.error("SHINY IMAGES:", imagesO_Shinies);
+            if (isDebugging) {
+               console.error("MORE THAN ONE VARIANT:", pokemonO.length, pokemonO.map(p => p.name));
+               console.error("NORMAL IMAGES:", imagesO_Normals);
+               console.error("SHINY IMAGES:", imagesO_Shinies);
+            };
+
+            const matchVariant = async (poke, variant) => {
+               const imgVarN = imagesO_Normals.find(img => Number(img.details.variant) === variant);
+               const imgVarS = imagesO_Shinies.find(img => Number(img.details.variant) === variant);
+
+               poke.images.normal = imgVarN._id;
+               poke.images.shiny = imgVarS._id;
+
+               // console.log('Variant Match Up:');
+               // console.log('Pokemon Name:', poke.name);
+               // console.log('Normal Variant:', imgVarN.file);
+               // console.log('Shiny Variant:', imgVarS.file);
+
+               if (!isDebugging) await poke.save()
+            };
+
+            for (let index = 0; index < pokemonO.length; index++) {
+               const p = pokemonO[index];
+               console.log('#', index, p.name);
+            };
+
+
          };
 
          console.log('Updated Pokedex#:', nationalPokedexNumber);
@@ -184,8 +206,42 @@ const linkImagesWithPokemon = async (req, res, next) => {
    }
 };
 
+const deleteImage = async (req, res, next) => {
+   try {
+      const { id } = req.query;
+      let deletedImage = null;
+
+      const image = await Image.findOne({ 'imgur.id': id });
+
+      if (image) {
+         const response = await fetch(`https://api.imgur.com/3/image/${image.imgur.deleteHash}`, {
+            method: "DELETE",
+            headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` },
+            redirect: "follow"
+         });
+
+         const json = await response.json();
+
+         if (response.ok) {
+            console.log("Deleted from Imgur.")
+            deletedImage = await image.deleteOne()
+         }
+
+         if (!response.ok) {
+            console.log('Image was not deleted.');
+            console.error(json);
+            throw json;
+         }
+      }
+
+      return res.status(200).json(deletedImage);
+   }
+   catch (error) { next(error) }
+}
+
 export {
    createImage,
+   deleteImage,
    getImages,
    linkImagesWithPokemon
 };

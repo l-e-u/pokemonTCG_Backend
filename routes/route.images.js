@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
    createImage,
+   deleteImage,
    getImages,
    linkImagesWithPokemon
 } from '../controllers/controller.image.js';
@@ -14,5 +15,8 @@ router.get('/', getImages)
 router.post('/', createImage);
 
 router.patch('/', linkImagesWithPokemon)
+
+// DELETE an image
+router.delete('/', deleteImage)
 
 export default router;

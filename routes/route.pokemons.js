@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
    // createPokemon,
+   deletePokemon,
    getAllPokemon,
    getPokemonByNameSearch,
    getOnePokemonByName,
@@ -23,5 +24,8 @@ router.get('/:name', getOnePokemonByName);
 
 // PATCH update pokemon
 router.patch('/', updatePokemon)
+
+// DELETE one pokemon
+router.delete('/', deletePokemon);
 
 export default router;

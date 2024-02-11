@@ -53,7 +53,7 @@ const linkImagesWithPokemon = async (req, res, next) => {
    try {
       const isDebugging = true;
 
-      for (let nationalPokedexNumber = 494; nationalPokedexNumber < 650; nationalPokedexNumber++) {
+      for (let nationalPokedexNumber = 722; nationalPokedexNumber < 810; nationalPokedexNumber++) {
          const pokemons = await Pokemon.find({ nationalPokedexNumber });
          const images = await Image.find({ file: { $regex: `_${nationalPokedexNumber.toString().padStart(4, "0")}_`, $options: 'i' } });
 
@@ -190,6 +190,13 @@ const linkImagesWithPokemon = async (req, res, next) => {
             for (let index = 0; index < pokemonO.length; index++) {
                const p = pokemonO[index];
                console.log('#', index, p.name);
+
+               if (p.name === "Greninja (Battle Bond Ability)") {
+                  await p.deleteOne();
+                  continue;
+               };
+
+               console.error("NO LINK FOR:", p.nationalPokedexNumber)
             };
 
 

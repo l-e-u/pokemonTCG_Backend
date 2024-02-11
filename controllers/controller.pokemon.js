@@ -88,8 +88,21 @@ const updatePokemon = async (req, res, next) => {
    catch (error) { next(error) }
 }
 
+// DELETE one pokemon by id
+const deletePokemon = async (req, res, next) => {
+   try {
+      const { id } = req.query;
+
+      const pokemon = await Pokemon.findByIdAndDelete(id);
+
+      return res.status(200).json(pokemon);
+   }
+   catch (error) { next(error) }
+}
+
 export {
    // createPokemon,
+   deletePokemon,
    getAllPokemon,
    getPokemonByNameSearch,
    getOnePokemonByName,

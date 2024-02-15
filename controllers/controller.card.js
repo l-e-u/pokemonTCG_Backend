@@ -13,12 +13,15 @@ import {
 // GET all cards
 const getCards = async (req, res, next) => {
    try {
-      const { name, nationalPokedexNumber } = req.query;
+      const { name, nationalPokedexNumbers } = req.query;
 
+      console.log(name, nationalPokedexNumbers)
       const cards =
          await Card
-            .find(
-               { name: "Tyrunt" })
+            .find({
+               ...(name && { name }),
+               ...(nationalPokedexNumbers && { nationalPokedexNumbers })
+            })
             .populate({
                path: 'expansion',
                select: { 'cards': 0 }
@@ -84,28 +87,58 @@ const createCardsByExpansion = async (req, res, next) => {
 };
 
 const linkCards = async (req, res, next) => {
-   const { nationalPokedexNumber } = req.query;
+   // const { nationalPokedexNumber } = req.query;
 
    try {
-      const theirCards = await getCardsByNationalPokedexNumber(nationalPokedexNumber);
+      for (let nationalPokedexNumber = 17; nationalPokedexNumber <= 1025; nationalPokedexNumber++) {
+         console.log("Pokemon Number:", nationalPokedexNumber);
 
-      for (let index = 0; index < theirCards.length; index++) {
-         const theirCard = theirCards[index];
+         const theirCards = await getCardsByNationalPokedexNumber(nationalPokedexNumber);
 
-         const myCard = await Card.findOne({ altId: theirCard.id });
+         // return res.status(200).json(theirCards.map(card => ({ id: card.id, name: card.name, set: card.set.id })))
 
-         if (!myCard) {
-            console.log("NOT FOUND!");
-            console.log(theirCard);
+         let count = 8
+         const id = setInterval(() => {
+            if (count > 10) count = 8;
+            console.log('syncing'.padStart(count, '.'));
+            count++;
+         }, 1000);
 
-            continue;
+         for (let index = 0; index < theirCards.length; index++) {
+            const theirCard = theirCards[index];
+
+            const myCard = await Card.findOneAndUpdate(
+               { altId: theirCard.id },
+               { nationalPokedexNumbers: theirCard.nationalPokedexNumbers },
+               { new: true }
+            );
+
+            if (!myCard) {
+               const expansion = await Expansion.findOne({ altId: theirCard.set.id });
+
+               if (!expansion) {
+                  console.log("NOT FOUND!");
+                  console.log(theirCard);
+
+                  throw "no expansion"
+               };
+
+               const cardCopy = copyCardToMySchema(theirCard);
+
+               cardCopy.expansion = expansion._id;
+
+               const card = await Card.create(cardCopy);
+
+               console.log('NEW CARD ADDED!');
+               console.log(card);
+            };
          };
 
-         myCard.nationalPokedexNumbers = theirCard.nationalPokedexNumbers;
-         await myCard.save();
+         clearInterval(id);
+         console.log(`${theirCards.length} cards synced!`);
       };
 
-      return res.status(200).json("cards linked");
+      return res.status(200).json('complete');
    }
    catch (error) { next(error) }
 };
@@ -134,7 +167,7 @@ const syncCards = async (req, res, next) => {
          };
       };
 
-
+      // with each new expansion on their database. create and copy the expansion and its cards to my database
       for (let index = 0; index < newExpansions.length; index++) {
          const newExpansion = newExpansions[index];
 
@@ -154,23 +187,20 @@ const syncCards = async (req, res, next) => {
             }
          });
 
-         // update the series or create a new one
-         await Series.findOneAndUpdate(
-            { name: newExpansion.series },
-            { $push: { expansions: expansion } },
-            { upsert: true }
-         );
-
          console.log(`WORKING: ${expansion.altId} - ${expansion.name}`);
 
          // get all the cards in the new expansion from their database
          const data = await getCardsByExpansionId(expansion.altId);
 
+         // copy their cards using the schema on my database
          const newCards = data.map(copyCardToMySchema);
-         newCards.forEach((card, index, arr) => {
-            arr[index].expansion = expansion._id;
+
+         // add the expansion id to each card
+         newCards.forEach(card => {
+            card.expansion = _id;
          });
 
+         // add all the cards to the database
          await Card.insertMany(newCards)
             .then(async (cards) => {
                expansion.cards = [];
@@ -181,10 +211,19 @@ const syncCards = async (req, res, next) => {
 
                await expansion.save();
 
+               // update the series or create a new one
+               await Series.findOneAndUpdate(
+                  { name: newExpansion.series },
+                  { $push: { expansions: expansion } },
+                  { upsert: true }
+               );
+
                console.log('SUCCESS!', `${newCards.length} added!`);
 
             })
-            .catch(error => {
+            .catch(async (error) => {
+               // any errors will delete the expansion off of my database
+               await expansion.deleteOne();
                console.log(`ERROR @ ${index}`, error);
             });
       };

@@ -67,99 +67,103 @@ const cardMarketSchema = new Schema(
    { timestamps: true }
 );
 
-const cardSchema = new Schema({
-   altId: String,
-   hp: Number,
-   illustrator: String,
-   level: String,
-   name: String,
-   number: String,
-   text: String,
-   abilities: [{
-      name: {
+const cardSchema = new Schema(
+   {
+      altId: String,
+      hp: Number,
+      illustrator: String,
+      level: String,
+      name: String,
+      number: String,
+      text: String,
+      abilities: [{
+         name: {
+            lowercase: true,
+            type: String
+         },
+         text: String,
+         type: { type: String }
+      }],
+      attacks: [{
+         costs: [{
+            elementType: {
+               lowercase: true,
+               type: String
+            },
+            quantity: Number
+         }],
+         damage: String,
+         name: {
+            lowercase: true,
+            type: String
+         },
+         text: String
+      }],
+      elementTypes: [{
          lowercase: true,
          type: String
+      }],
+      expansion: {
+         ref: 'Expansion',
+         type: Schema.Types.ObjectId
       },
-      text: String,
-      type: { type: String }
-   }],
-   attacks: [{
-      costs: [{
+      imageURLs: {
+         small: String,
+         large: String,
+      },
+      markets: {
+         tcgPlayer: tcgPlayerSchema,
+         cardMarket: cardMarketSchema
+      },
+      nationalPokedexNumbers: [Number],
+      rarity: {
+         lowercase: true,
+         type: String,
+      },
+      resistances: [{
+         elementType: {
+            lowercase: true,
+            type: String
+         },
+         value: {
+            lowercase: true,
+            type: String
+         }
+      }],
+      retreatCosts: [{
          elementType: {
             lowercase: true,
             type: String
          },
          quantity: Number
       }],
-      damage: String,
-      name: {
+      rules: [String],
+      subTypes: [{
          lowercase: true,
          type: String
-      },
-      text: String
-   }],
-   elementTypes: [{
-      lowercase: true,
-      type: String
-   }],
-   expansion: {
-      ref: 'Expansion',
-      type: Schema.Types.ObjectId
-   },
-   imageURLs: {
-      small: String,
-      large: String,
-   },
-   markets: {
-      tcgPlayer: tcgPlayerSchema,
-      cardMarket: cardMarketSchema
-   },
-   rarity: {
-      lowercase: true,
-      type: String,
-   },
-   resistances: [{
-      elementType: {
-         lowercase: true,
-         type: String
-      },
-      value: {
-         lowercase: true,
-         type: String
-      }
-   }],
-   retreatCosts: [{
-      elementType: {
-         lowercase: true,
-         type: String
-      },
-      quantity: Number
-   }],
-   rules: [String],
-   subTypes: [{
-      lowercase: true,
-      type: String
-   }],
-   superType: {
-      type: String,
-      set: (text) => {
-         if ((text === 'pokémon') || (text === 'Pokémon') || (text === 'POKÉMON')) {
-            text = 'pokemon';
-         };
+      }],
+      superType: {
+         type: String,
+         set: (text) => {
+            if ((text === 'pokémon') || (text === 'Pokémon') || (text === 'POKÉMON')) {
+               text = 'pokemon';
+            };
 
-         return text.toLowerCase();
-      }
-   },
-   weaknesses: [{
-      elementType: {
-         lowercase: true,
-         type: String
+            return text.toLowerCase();
+         }
       },
-      value: {
-         lowercase: true,
-         type: String
-      }
-   }],
-});
+      weaknesses: [{
+         elementType: {
+            lowercase: true,
+            type: String
+         },
+         value: {
+            lowercase: true,
+            type: String
+         }
+      }],
+   },
+   { timestamps: true }
+);
 
 export default Model('Card', cardSchema);

@@ -51,9 +51,9 @@ const getImages = async (req, res, next) => {
 
 const linkImagesWithPokemon = async (req, res, next) => {
    try {
-      const isDebugging = true;
+      const isDebugging = false;
 
-      for (let nationalPokedexNumber = 722; nationalPokedexNumber < 810; nationalPokedexNumber++) {
+      for (let nationalPokedexNumber = 906; nationalPokedexNumber < 1026; nationalPokedexNumber++) {
          const pokemons = await Pokemon.find({ nationalPokedexNumber });
          const images = await Image.find({ file: { $regex: `_${nationalPokedexNumber.toString().padStart(4, "0")}_`, $options: 'i' } });
 
@@ -168,8 +168,8 @@ const linkImagesWithPokemon = async (req, res, next) => {
 
             if (isDebugging) {
                console.error("MORE THAN ONE VARIANT:", pokemonO.length, pokemonO.map(p => p.name));
-               console.error("NORMAL IMAGES:", imagesO_Normals);
-               console.error("SHINY IMAGES:", imagesO_Shinies);
+               console.error("NORMAL IMAGES:", imagesO_Normals.map(({ file, url }) => ({ file, url })));
+               console.error("SHINY IMAGES:", imagesO_Shinies.map(({ file, url }) => ({ file, url })));
             };
 
             const matchVariant = async (poke, variant) => {
@@ -191,12 +191,51 @@ const linkImagesWithPokemon = async (req, res, next) => {
                const p = pokemonO[index];
                console.log('#', index, p.name);
 
-               if (p.name === "Greninja (Battle Bond Ability)") {
-                  await p.deleteOne();
-                  continue;
+               if (nationalPokedexNumber === 1017) {
+                  if (p.name === "Ogerpon (Cornerstone Mask)") {
+                     p.name = "Ogerpon Cornerstone Mask";
+                     p.elements.push('grass', 'rock');
+                     matchVariant(p, 3);
+                     continue;
+                  };
+
+
+                  if (p.name === "Ogerpon (Hearthflame Mask)") {
+                     p.name = "Ogerpon Hearthflame Mask";
+                     p.elements.push('grass', 'fire');
+                     matchVariant(p, 2);
+                     continue;
+                  };
+
+
+                  if (p.name === "Ogerpon (Wellspring Mask)") {
+                     p.name = "Ogerpon Wellspring Mask";
+                     p.elements.push('grass', 'water');
+                     matchVariant(p, 1);
+                     continue;
+                  };
+
+
                };
 
-               console.error("NO LINK FOR:", p.nationalPokedexNumber)
+               if (nationalPokedexNumber === 1024) {
+                  if (p.name === "Terapagos (Terastal Form)") {
+                     p.name = "Terapagos Terastal Form";
+                     p.elements.push('normal');
+                     matchVariant(p, 1);
+                     continue;
+                  };
+
+                  if (p.name === "Terapagos (Stellar Form)") {
+                     p.name = "Terapagos Stellar Form"
+                     p.elements.push('normal');
+                     const img = imagesO_Normals.find(img => Number(img.details.variant) === 2);
+                     p.images.normal = img._id;
+                     continue;
+                  };
+               };
+
+               console.error("________________________________________NO LINK FOR:", p.nationalPokedexNumber)
             };
 
 

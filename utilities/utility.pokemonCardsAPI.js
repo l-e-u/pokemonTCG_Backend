@@ -17,17 +17,21 @@ export const getCardsByExpansionId = async (id) => {
    do {
       page++;
 
+      console.log(`Page: ${page}`);
+
       const response = await pokemon.card.where({ q: `set.id:"${id}"`, pageSize, page });
 
       // The number of cards in this expansion
       totalCount = response.totalCount;
+
+      console.log(`Count: ${response.data.length}`);
 
       // Join the page results with the total results
       cards = cards.concat(response.data);
 
    } while (cards.length < totalCount);
 
-   console.log(`Pages: ${page}`, `Cards/pg: ${pageSize}`, `Total: ${totalCount}`);
+   console.log(`Total: ${totalCount}`);
 
    return cards;
 };
@@ -37,7 +41,7 @@ export const getCardsByName = async (cardName) => {
 };
 
 export const getCardsByNationalPokedexNumber = async (number) => {
-   return await pokemon.card.where({ q: `nationalPokedexNumbers:${number}` });
+   return await goThroughAllPages({ q: `nationalPokedexNumbers:${number}` });
 };
 
 export const getAllSets = async () => {
@@ -81,6 +85,7 @@ export const copyCardToMySchema = (copy) => ({
          prices: copy.cardmarket?.prices
       }
    },
+   nationalPokedexNumbers: copy.nationalPokedexNumbers,
    rarity: copy.rarity,
    resistances: copy.resistances?.map(r => ({
       elementType: r.type,
@@ -95,6 +100,35 @@ export const copyCardToMySchema = (copy) => ({
       value: w.value
    }))
 });
+
+const goThroughAllPages = async (query) => {
+   let page = 0;
+   const pageSize = 250;
+   let totalCount = 0;
+
+   let cards = [];
+
+   do {
+      page++;
+
+      console.log(`Page: ${page}`);
+
+      const response = await pokemon.card.where({ ...query, pageSize, page });
+
+      // The number of cards in this expansion
+      totalCount = response.totalCount;
+
+      console.log(`Count: ${response.data.length}`);
+
+      // Join the page results with the total results
+      cards = cards.concat(response.data);
+
+   } while (cards.length < totalCount);
+
+   console.log(`Total: ${totalCount}`);
+
+   return cards;
+};
 
 // Used in to group element types from the API cards to my schema on the database
 const groupArrayByElements = (array) => {

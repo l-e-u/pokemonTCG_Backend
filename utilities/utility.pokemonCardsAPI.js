@@ -70,7 +70,6 @@ export const copyCardToMySchema = (copy) => ({
       costs: groupArrayByElements(attack.cost)
    })),
    elementTypes: copy.types,
-   expansion: expansion._id,
    imageURLs: {
       small: copy.images?.small,
       large: copy.images?.large

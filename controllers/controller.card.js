@@ -14,12 +14,11 @@ import {
 const getCards = async (req, res, next) => {
    try {
       const { name, nationalPokedexNumber } = req.query;
+
       const cards =
          await Card
-            .find({
-               ...(name && { name }),
-               ...(nationalPokedexNumber && { nationalPokedexNumber })
-            })
+            .find(
+               { name: "Tyrunt" })
             .populate({
                path: 'expansion',
                select: { 'cards': 0 }
@@ -135,8 +134,11 @@ const syncCards = async (req, res, next) => {
          };
       };
 
+
       for (let index = 0; index < newExpansions.length; index++) {
          const newExpansion = newExpansions[index];
+
+         // create the new expansion on my database
          const expansion = await Expansion.create({
             abbreviation: newExpansion.ptcgoCode,
             altId: newExpansion.id,
@@ -152,17 +154,42 @@ const syncCards = async (req, res, next) => {
             }
          });
 
+         // update the series or create a new one
          await Series.findOneAndUpdate(
-            { name: expansion.series },
+            { name: newExpansion.series },
             { $push: { expansions: expansion } },
             { upsert: true }
          );
 
-         const series = await Series.findOne()
+         console.log(`WORKING: ${expansion.altId} - ${expansion.name}`);
+
+         // get all the cards in the new expansion from their database
+         const data = await getCardsByExpansionId(expansion.altId);
+
+         const newCards = data.map(copyCardToMySchema);
+         newCards.forEach((card, index, arr) => {
+            arr[index].expansion = expansion._id;
+         });
+
+         await Card.insertMany(newCards)
+            .then(async (cards) => {
+               expansion.cards = [];
+
+               cards.forEach(card => {
+                  expansion.cards.push(card._id);
+               });
+
+               await expansion.save();
+
+               console.log('SUCCESS!', `${newCards.length} added!`);
+
+            })
+            .catch(error => {
+               console.log(`ERROR @ ${index}`, error);
+            });
       };
 
-
-      return res.status(200).json(newExpansions.length > 0 ? newExpansions : 'Synced')
+      return res.status(200).json(newExpansions.length > 0 ? newExpansions : 'Synced');
    }
    catch (error) { next(error) }
 };

@@ -15,7 +15,6 @@ const getCards = async (req, res, next) => {
    try {
       const { name, nationalPokedexNumbers } = req.query;
 
-      console.log(name, nationalPokedexNumbers)
       const cards =
          await Card
             .find({
@@ -234,9 +233,9 @@ const syncCards = async (req, res, next) => {
 };
 
 export {
-   syncCards,
-   createCardsByExpansion,
+   // syncCards,
+   // createCardsByExpansion,
    getCards,
-   getCardById,
-   linkCards
+   // getCardById,
+   // linkCards
 };

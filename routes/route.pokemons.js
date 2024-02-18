@@ -1,23 +1,24 @@
 import { Router } from 'express';
+import { queryIsEmpty } from '../middleware/middleware.queryIsEmpty.js';
 import {
    // createPokemon,
    deletePokemon,
    getAllPokemon,
-   getPokemonByNameSearch,
-   getOnePokemonByName,
+   // getPokemonByNameSearch,
+   // getOnePokemonByName,
    updatePokemon
 } from '../controllers/controller.pokemon.js';
 
 const router = Router();
 
 // GET all pokemon
-router.get('/', getAllPokemon);
+router.get('/', queryIsEmpty, getAllPokemon);
 
 // GET a list of pokemon where the name matches the query
-router.get('/search/:name', getPokemonByNameSearch);
+// router.get('/search/:name', getPokemonByNameSearch);
 
 // GET one pokemon
-router.get('/:name', getOnePokemonByName);
+// router.get('/:name', getOnePokemonByName);
 
 // POST a new pokemon
 // router.post('/', createPokemon);

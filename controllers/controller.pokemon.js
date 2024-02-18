@@ -4,10 +4,19 @@ import Pokemon from '../models/model.pokemon.js';
 const getAllPokemon = async (req, res, next) => {
    try {
       const query = req.query || {};
+      const { name } = query;
 
       const pokemon =
          await Pokemon
-            .find({ ...query })
+            .find({
+               ...query,
+               ...(name && {
+                  name: {
+                     $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
+                     $options: 'i'
+                  }
+               })
+            })
             .populate(['images.normal', 'images.shiny'])
             .sort({ nationalPokedexNumber: 1 });
 
@@ -17,44 +26,44 @@ const getAllPokemon = async (req, res, next) => {
    catch (error) { next(error) }
 };
 
-// GET one pokemon by name
-const getOnePokemonByName = async (req, res, next) => {
-   try {
-      const { name } = req.params;
+// // GET one pokemon by name
+// const getOnePokemonByName = async (req, res, next) => {
+//    try {
+//       const { name } = req.params;
 
-      const pokemon =
-         await Pokemon
-            .findOne({ name })
-            .collation({ locale: 'en', strength: 2 });
+//       const pokemon =
+//          await Pokemon
+//             .findOne({ name })
+//             .collation({ locale: 'en', strength: 2 });
 
-      return res.status(200).json(pokemon);
-   }
+//       return res.status(200).json(pokemon);
+//    }
 
-   catch (error) { next(error) }
-};
+//    catch (error) { next(error) }
+// };
 
-// GET list of pokemon names
-const getPokemonByNameSearch = async (req, res, next) => {
-   try {
-      const { name } = req.params;
+// // GET list of pokemon names
+// const getPokemonByNameSearch = async (req, res, next) => {
+//    try {
+//       const { name } = req.params;
 
-      const nameList =
-         await Pokemon
-            .find({
-               name: {
-                  $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
-                  $options: 'i'
-               },
-               primary: true
-            })
-            .populate(['images.normal', 'images.shiny'])
-            .sort({ name: 1 });
+//       const nameList =
+//          await Pokemon
+//             .find({
+//                name: {
+//                   $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
+//                   $options: 'i'
+//                },
+//                primary: true
+//             })
+//             .populate(['images.normal', 'images.shiny'])
+//             .sort({ name: 1 });
 
-      return res.status(200).json(nameList);
-   }
+//       return res.status(200).json(nameList);
+//    }
 
-   catch (error) { next(error) }
-};
+//    catch (error) { next(error) }
+// };
 
 // POST new pokemon
 // const createPokemon = async (req, res, next) => {
@@ -104,7 +113,7 @@ export {
    // createPokemon,
    deletePokemon,
    getAllPokemon,
-   getPokemonByNameSearch,
-   getOnePokemonByName,
+   // getPokemonByNameSearch,
+   // getOnePokemonByName,
    updatePokemon
 };

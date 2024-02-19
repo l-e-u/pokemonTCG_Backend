@@ -4,7 +4,7 @@ import Pokemon from '../models/model.pokemon.js';
 const getAllPokemon = async (req, res, next) => {
    try {
       const query = req.query || {};
-      const { name } = query;
+      const { name, nationalPokedexNumber } = query;
 
       const pokemon =
          await Pokemon
@@ -15,7 +15,8 @@ const getAllPokemon = async (req, res, next) => {
                      $regex: name.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&"),
                      $options: 'i'
                   }
-               })
+               }),
+               ...(nationalPokedexNumber && { nationalPokedexNumber })
             })
             .populate(['images.normal', 'images.shiny'])
             .sort({ nationalPokedexNumber: 1 });
